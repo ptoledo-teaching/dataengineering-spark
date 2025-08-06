@@ -7,11 +7,15 @@ The tools enclosed in this repo will allow you to easily create, log into, and d
 
 ## Initial Set-Up
 
+### Create data bucket
+
 Go into the AWS Console provided by AWS Academy, then go to the S3 service and:
 
 - Click on `Create bucket`
 - Name you bucket with your rut as `12345678-K-dde`
 - Click in `Create bucket`
+
+### Create the controller instance
 
 Go to the EC2 service and:
 
@@ -35,10 +39,11 @@ Go to the EC2 service and:
   - Click on the `instance` input and select the EC2 machine that drops down (it is the machine you just created in the previous step)
   - Click on `Associate`
 
+### Connect to the machine
 In your computer, open a terminal and then:
 
 - Go to the folder where you stored de cluster-key.pem file
-- If you are in linux, you should execute `chmod 400 cluster-key.pem` this step is nor required if you are in windows
+- ⚠️ If you are in linux, you should execute `chmod 400 cluster-key.pem` this step is NOT required if you are in windows
 - Run the command `ssh -i cluster-key.pem ubuntu@<ip>`
   - You will get a message similar to `The authenticity of host '52.70.173.29 (52.70.173.29)' can't be established.`
   - You should type `yes` to accept the fingerprint
@@ -50,11 +55,12 @@ Once you have connected to the main cluster server, we can proceed with the base
 
 ### Update your system
 
-You must update the system packages by running
+You must update the system packages and installing the basic requirements by running
 
 ```bash
 sudo apt update
 sudo apt upgrade -y
+sudo apt install zip python-is-python3 -y
 ```
 
 ### Clone Repository
@@ -62,7 +68,7 @@ sudo apt upgrade -y
 You must clone this repository that includes all the required code. You can do this by typing the following command in the terminal:
 
 ```bash
-https://github.com/ptoledo-teaching/dataengineering-spark.git
+git clone https://github.com/ptoledo-teaching/dataengineering-spark.git
 ```
 
 ### Install AWS CLI
