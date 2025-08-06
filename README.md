@@ -78,7 +78,6 @@ AWS CLI is the Amazon Web Services Command Line Interface. It allows you to mana
 Installation instructions can be found [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). In summary, copy and execute the following lines in the terminal
 
 ```bash
-sudo apt install zip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
@@ -112,22 +111,29 @@ This will log you out, and you must login again the same way as before.
 
 ## Cluster configuration
 
+### SSH Credentials
+
+It is required to pass the .pem credentials to flintrock to operate. To do this, on the folder with the `cluster-key.pem` file you should run:
+```bash
+ssh -i cluster-key.pem ubuntu@<ip_address> "mkdir dataengineering-spark/credentials/keys"
+scp -i cluster-key.pem cluster-key.pem ubuntu@<ip_address>:~/dataengineering-spark/credentials/keys
+ssh -i cluster-key.pem ubuntu@<ip_address> "chmod 400 dataengineering-spark/credentials/keys/cluster-key.pem"
+```
+
 ### AWS User Credentials
 
-1. In `credentials/aws/`, copy `credentials.sh.template` to `credentials.sh` by 
-2. Go to your lab initialization page in Canvas
-3. Click on **AWS Details**
-4. Complete the `credentials.sh` file with the informations that appear under **AWS CLI**
+>⚠️ **Important**: The AWS_SESSION_TOKEN changes with each session and must be updated each time you launch the lab
 
-#### If you are using a personal AWS Account
+Go to your cluster server and then go to the aws credentials folder with:
+```bash
+cd dataengineering-spark/credentials/aws
+```
+Make a copy of the credentials example file with:
+```
+cp credentials.sh.template credentials.sh
+```
+In the page to launch the AWS Academy session, go to `AWS Details` -> `Cloud Access` -> `AWS CLI` and complete the `credentials.sh` file with the corresponding informations. The final file should look similar to this:
 
-1. Go to the [IAM Users console](https://us-east-1.console.aws.amazon.com/iam/home?region=us-east-1#/users) and create a new programmatic user (e.g., **flintrock**).
-2. Assign the **AdministratorAccess** policy directly.
-3. After creation, go to the **Security credentials** tab → **Access keys** → Create a new access key.
-4. In `credentials/aws/`, copy `credentials.sh.template` to `credentials.sh` and add the generated key ID and secret.
-5. Delete the line `export AWS_SESSION_TOKEN=`
-
-Update the `bucket` variable in `scripts/test-001.py` with your bucket name.
 
 ## Usage on User Host
 
@@ -141,11 +147,11 @@ Scripts provided:
 
 Uses `config/`, `credentials/`, and `scripts/` to deploy and configure your cluster.
 
-You may need to edit `config/flintrock/config.yaml` if:
+You may need to edit `config/flintrock/config.yaml` if you want to:
 
-- Changing instance type (default: `t2.micro`)
-- Updating the AMI ID (subject to change)
-- Modifying number of workers (default: 2)
+- Change the instance type (default: `t2.micro`)
+- Updatw the AMI ID
+- Modify number of workers (default: 2)
 
 If deployment fails, the script will prompt you about keeping or deleting the created machines.
 
