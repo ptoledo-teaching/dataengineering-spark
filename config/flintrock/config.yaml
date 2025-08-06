@@ -11,7 +11,7 @@ providers:
     identity-file: credentials/keys/cluster-key.pem
     instance-type: t2.micro
     region: us-east-1
-    ami: ami-084a7d336e816906b
+    ami: ami-0263dd5562cf9d185
     user: ec2-user
     tenancy: default
     min-root-ebs-size-gb: 8
