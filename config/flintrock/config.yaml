@@ -1,0 +1,25 @@
+services:
+  spark:
+    version: 3.5.5
+    download-source: "s3://utfsm-inf356-releases/spark-3.5.5/"
+
+provider: ec2
+
+providers:
+  ec2:
+    key-name: flintrock-us-east-1
+    identity-file: credentials/keys/flintrock-us-east-1.pem
+    instance-type: t2.micro
+    region: us-east-1
+    ami: ami-085386e29e44dacd7
+    user: ec2-user
+    tenancy: default
+    min-root-ebs-size-gb: 8
+    instance-initiated-shutdown-behavior: terminate
+    authorize-access-from:
+      - 0.0.0.0/0
+
+launch:
+  num-slaves: 2
+
+debug: true
