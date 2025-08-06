@@ -3,10 +3,10 @@ from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.sql.functions import monotonically_increasing_id, col 
 
 # Bucket
-# You must create an s3 bucket in your aws account with the name XXXXXXXXXX-inf356 where
-# XXXXXXXXXX is your student number without dots or dashes. E.G. 123.456.789-0 => 1234567890.
-# You must replace the XXXXXXXXXX in the following line
-bucket = "XXXXXXXXXX-inf356"
+# You must create an s3 bucket in your aws account with the name XXXXXXXX-X-dde where
+# XXXXXXXX-X is your student rut without dots. E.G. 12.345.678-K => 12345678-K-dde
+# You must replace the XXXXXXXX-X in the following line
+bucket = "XXXXXXXX-X-dde"
 filename = "vlt_observations_000"
 
 # Create a SparkSession
@@ -49,8 +49,8 @@ schema = StructType([
 ])
 
 # Read the CSV file and number the rows
-print(f"Reading file {filename}.csv from utfsm-inf356-datasets bucket")
-df_0 = spark.read.csv(f"s3a://utfsm-inf356-datasets/vlt_observations/{filename}.csv", header=False, schema=schema)
+print(f"Reading file {filename}.csv from paranal-data bucket")
+df_0 = spark.read.csv(f"s3a://paranal-data/{filename}.csv", header=False, schema=schema)
 print(f"    - {df_0.count()} rows read")
 print(f"    - Creating row number column")
 df_0 = df_0.withColumn("oid", monotonically_increasing_id())
