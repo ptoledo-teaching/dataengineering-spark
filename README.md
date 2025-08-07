@@ -134,6 +134,9 @@ cp credentials.sh.template credentials.sh
 ```
 In the page to launch the AWS Academy session, go to `AWS Details` -> `Cloud Access` -> `AWS CLI` and complete the `credentials.sh` file with the corresponding informations. The final file should look similar to this:
 
+## Patch installation
+
+> **Pending**
 
 ## Usage on User Host
 
