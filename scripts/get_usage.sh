@@ -45,27 +45,38 @@ EOF
         if [ -z "$usage" ]; then
             echo -n "                 " >> /tmp/usage.txt
         else
-            cpu_message="$(echo "$usage" | awk -F' MEM' '{print $1}')"
-            cpu_usage=$(echo $usage | awk '{print $2}' | tr -d '%')
-            mem_message="$(echo "$usage" | awk -F'% ' '{print $2}')"
-            mem_usage=$(echo $usage | awk '{print $4}' | tr -d '%')
-            if (( cpu_usage > 90 )); then
-                echo -ne "\e[1;31m$cpu_message\e[0m " >> /tmp/usage.txt
-                elif (( cpu_usage > 50 )); then
-                echo -ne "\e[1;93m$cpu_message\e[0m " >> /tmp/usage.txt
-                elif (( cpu_usage > 10 )); then
-                echo -ne "\e[1;32m$cpu_message\e[0m " >> /tmp/usage.txt
+            # Remove lines with ASCII art or banners (non-usage lines)
+            usage_line=$(echo "$usage" | grep -Eo 'CPU[ ]+[0-9]+% MEM[ ]+[0-9]+%')
+            if [ -z "$usage_line" ]; then
+                echo -n "                 " >> /tmp/usage.txt
             else
-                echo -n "$cpu_message " >> /tmp/usage.txt
-            fi
-            if (( cpu_umem_usageage > 75 )); then
-                echo -ne "\e[1;31m$mem_message\e[0m" >> /tmp/usage.txt
-                elif (( mem_usage > 50 )); then
-                echo -ne "\e[1;93m$mem_message\e[0m" >> /tmp/usage.txt
-                elif (( mem_usage > 20 )); then
-                echo -ne "\e[1;32m$mem_message\e[0m" >> /tmp/usage.txt
-            else
-                echo -n "$mem_message" >> /tmp/usage.txt
+                cpu_message="$(echo "$usage_line" | awk -F' MEM' '{print $1}')"
+                cpu_usage=$(echo "$usage_line" | awk '{print $2}' | tr -d '%')
+                mem_message="$(echo "$usage_line" | awk -F'% ' '{print $2}')"
+                mem_usage=$(echo "$usage_line" | awk '{print $4}' | tr -d '%')
+                # Validate numeric values
+                if [[ "$cpu_usage" =~ ^[0-9]+$ ]] && [[ "$mem_usage" =~ ^[0-9]+$ ]]; then
+                    if (( cpu_usage > 90 )); then
+                        echo -ne "\e[1;31m$cpu_message\e[0m " >> /tmp/usage.txt
+                    elif (( cpu_usage > 50 )); then
+                        echo -ne "\e[1;93m$cpu_message\e[0m " >> /tmp/usage.txt
+                    elif (( cpu_usage > 10 )); then
+                        echo -ne "\e[1;32m$cpu_message\e[0m " >> /tmp/usage.txt
+                    else
+                        echo -n "$cpu_message " >> /tmp/usage.txt
+                    fi
+                    if (( mem_usage > 75 )); then
+                        echo -ne "\e[1;31m$mem_message\e[0m" >> /tmp/usage.txt
+                    elif (( mem_usage > 50 )); then
+                        echo -ne "\e[1;93m$mem_message\e[0m" >> /tmp/usage.txt
+                    elif (( mem_usage > 20 )); then
+                        echo -ne "\e[1;32m$mem_message\e[0m" >> /tmp/usage.txt
+                    else
+                        echo -n "$mem_message" >> /tmp/usage.txt
+                    fi
+                else
+                    echo -n "                 " >> /tmp/usage.txt
+                fi
             fi
         fi
     done
