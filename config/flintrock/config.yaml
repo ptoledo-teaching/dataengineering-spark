@@ -1,7 +1,7 @@
 services:
   spark:
-    version: 3.5.5
-    download-source: "s3://dataengineering-releases/spark-3.5.5/"
+    version: 3.5.6
+    download-source: "s3://dataengineering-releases/spark-3.5.6/"
 
 provider: ec2
 
