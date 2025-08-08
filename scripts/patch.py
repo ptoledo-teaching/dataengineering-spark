@@ -18,13 +18,13 @@ patches = [
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/services.py",
         "lines": (367,367),
         "replacement": '''
-                    python3 /tmp/download-package.py "{{download_source}}" "spark"'''
+                    python3 /tmp/download-package.py "{download_source}" "spark"'''
     },
     {
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/download-package.py",
         "lines": (183,183),
         "replacement": '''
-                python3 /tmp/download-package.py "{{download_source}}" "hadoop"'''
+                python3 /tmp/download-package.py "{download_source}" "hadoop"'''
     },
     {
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/download-package.py",
