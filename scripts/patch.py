@@ -24,7 +24,7 @@ patches = [
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/download-package.py",
         "lines": (183,183),
         "replacement": '''
-                python /tmp/download-package.py "{{download_source}}" "hadoop"'''
+                python3 /tmp/download-package.py "{{download_source}}" "hadoop"'''
     },
     {
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/download-package.py",
@@ -36,7 +36,7 @@ patches = [
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/core.py",
         "lines": (661,661),
         "replacement": '''
-            python /tmp/setup-ephemeral-storage.py'''
+            python3 /tmp/setup-ephemeral-storage.py'''
     },
     {
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/core.py",
