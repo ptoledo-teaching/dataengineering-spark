@@ -2,7 +2,7 @@
 source credentials/aws/credentials.sh
 echo "### Launching cluster"
 flintrock --config config/flintrock/config.yaml launch spark-cluster 2>/dev/null
-IP_MASTER=`flintrock --config config/flintrock/config.yaml describe spark-cluster | grep master: | awk '{print $2}'`
+IP_MASTER=`flintrock --config config/flintrock/config.yaml describe spark-cluster 2>/dev/null | grep master: | awk '{print $2}'`
 ssh -i credentials/keys/cluster-key.pem -o StrictHostKeyChecking=no ec2-user@$IP_MASTER 'ssh -o StrictHostKeyChecking=no ec2-user@$(hostname) "mkdir -p scripts"' 2>/dev/null
 echo "### Transferring files to master node"
 scp -i credentials/keys/cluster-key.pem scripts/* ec2-user@$IP_MASTER:~/scripts
