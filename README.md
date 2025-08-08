@@ -1,5 +1,5 @@
 
-# Data Engineering - Deploying a Spark Cluster on AWS Academy
+# Deploying a Spark Cluster on AWS Academy
 
 This repository is intended to provide the instructions to deploy a Spark Cluster for academic purposes within the AWS Academy environment. Together with this, this repo contains several scripts to facilitate the deployment and management of the cluster.
 
