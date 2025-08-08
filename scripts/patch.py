@@ -15,7 +15,7 @@ patches = [
                     mountpoint='/media/ephemeral' + str(num)))'''
     },
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/download-package.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/services.py",
         "lines": (367,367),
         "replacement": '''
                     python3 /tmp/download-package.py "{{download_source}}" "spark"'''
