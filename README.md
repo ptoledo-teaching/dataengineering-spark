@@ -228,6 +228,8 @@ Sum of squares: 333332833333500000
 
 ### test-001.sh
 
+> ⚠️ **Important**: Remember to configure the bucket name by editing the line 9 in the **scripts/test-001.py** file accordingly
+ 
 Tests S3 integration and PySpark SQL features, by loading reference data and executing SQL operations.
 
 To run this test it is required to vertically and horizontally scale the cluster. The recommended configuration considers **7** workers with machines type **t2.medium**. This test will generate files to be stored in the S3 bucket you created at the beginning of this tutorial. You must configure the bucket name by editing the line 9 in the **scripts/test-001.py** file.
