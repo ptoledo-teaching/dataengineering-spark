@@ -124,8 +124,6 @@ sudo apt install pipx zip python-is-python3 python3-boto3 -y
 pipx ensurepath
 ```
 
-It is recommended to reboot the machine after this step.
-
 ### Install AWS CLI
 
 AWS CLI allows you to manage AWS services from the command line and is required by Flintrock to interact with EC2:
@@ -165,7 +163,23 @@ pipx uninstall flintrock 2>/dev/null; pipx install flintrock
 python3 /opt/dataengineering-spark/scripts/patch.py
 ```
 
-> ⚠️ Important: The patch script must be run from the home directory (`~`) because it resolves internal Flintrock file paths relative to that location.
+> ⚠️ Important: The patch script must be run from the home directory (`~`) because it resolves internal Flintrock file paths relative to that location
+
+### Configure a Spark-Specific Environment on the Controller
+
+The repository includes `scripts/spark-env.sh`, a shell snippet that adds the repository's management scripts to your `PATH` so they can be invoked directly from any directory.
+
+To have a shortcut for loading the Spark environment, create a symbolic link to that file in your home folder:
+
+```bash
+ln -s /opt/dataengineering-spark/scripts/spark-env.sh ~/spark-env.sh
+```
+
+Then, whenever you want to work with the cluster in that shell session, load it with:
+
+```bash
+source ~/spark-env.sh
+```
 
 ### Reboot the Controller
 
@@ -181,30 +195,20 @@ After the reboot, reconnect using the same SSH command as before.
 
 ### Upload SSH Credentials
 
-The Controller needs the `cluster-key.pem` file to create and connect to the Spark cluster machines. Run the following commands **from your local machine** (in the folder where the key is stored):
-
-```bash
-ssh -i cluster-key.pem ubuntu@<controller_public_ip> \
-  "sudo mkdir -p /opt/dataengineering-spark/credentials/keys && \
-   sudo chown ubuntu:ubuntu /opt/dataengineering-spark/credentials/keys"
-scp -i cluster-key.pem cluster-key.pem \
-  ubuntu@<controller_public_ip>:/opt/dataengineering-spark/credentials/keys/
-ssh -i cluster-key.pem ubuntu@<controller_public_ip> \
-  "chmod 400 /opt/dataengineering-spark/credentials/keys/cluster-key.pem"
-```
+The Controller needs the `cluster-key.pem` file to create and connect to the Spark cluster machines. You must put the key in the `/opt/dataengineering-spark/credentials/keys` folder in the Controller machine (you must create the folder) and be sure that it has 400 permissions.
 
 ### Set AWS User Credentials
 
 > ⚠️ Important: The AWS session token changes with each session and must be updated every time you start the lab
 
-Connect to the Controller and go to the repository:
+Create a copy of the example aws credentials files inside the repo:
 
 ```bash
 cd /opt/dataengineering-spark
 cp credentials/aws/credentials.sh.template credentials/aws/credentials.sh
 ```
 
-In the page where you launched the AWS Academy session, go to **AWS Details** → **Cloud Access** → **AWS CLI** to get your account credentials. Open `credentials/aws/credentials.sh` and fill in the three values:
+In the page where you launched the AWS Academy session, go to **AWS Details** → **Cloud Access** → **AWS CLI** → **show** to get your account credentials. Open `credentials/aws/credentials.sh` and fill in the three values:
 
 ```bash
 export AWS_ACCESS_KEY_ID=<your_access_key>
@@ -212,23 +216,21 @@ export AWS_SECRET_ACCESS_KEY=<your_secret_key>
 export AWS_SESSION_TOKEN=<your_session_token>
 ```
 
+> ⚠️ Important: Please notice that the format of the information available in the AWS Academy Canvas website is different from the one required by the template credentials.sh file
+
 ## Managing the Cluster
 
-All cluster management scripts must be run from the Controller machine, inside the `/opt/dataengineering-spark/` directory:
-
-```bash
-cd /opt/dataengineering-spark
-```
+To run any cluster management command, you must be connected to the Controller and have the Spark environment loaded with `source ~/spark-env.sh`.
 
 ### Launching the Cluster
 
 Run the launch script to deploy and configure the Spark cluster:
 
 ```bash
-./launch.sh
+launch.sh
 ```
 
-This script uses `config/flintrock/config.yaml` to configure the cluster. You may edit that file before launching if you want to:
+This script uses `config/flintrock/config.yaml` to configure the cluster. You may edit `/opt/dataengineering-spark/config/flintrock/config.yaml` before launching if you want to:
 
 - Change the instance type for the workers (default: `t2.micro`)
 - Modify the number of workers (default: `2`)
@@ -240,7 +242,7 @@ Expected runtime: 2–4 minutes. If deployment fails, the script will ask whethe
 To open an SSH session to the Spark cluster Master node:
 
 ```bash
-./login.sh
+login.sh
 ```
 
 ### Destroying the Cluster
@@ -248,7 +250,7 @@ To open an SSH session to the Spark cluster Master node:
 To terminate all cluster EC2 instances:
 
 ```bash
-./destroy.sh
+destroy.sh
 ```
 
 This keeps all configurations intact (S3 bucket, credentials, and keys). You may see residual security groups named `flintrock` or `flintrock-spark-cluster`. These can be deleted manually from the AWS console.
@@ -340,8 +342,7 @@ And the following folders should appear in your S3 bucket:
 To stop the Spark cluster without losing configuration, run from the Controller:
 
 ```bash
-cd /opt/dataengineering-spark
-./destroy.sh
+destroy.sh
 ```
 
 This terminates all cluster EC2 instances but keeps the Controller, the S3 bucket, and all credentials intact. You can redeploy the cluster at any time with `./launch.sh`.
