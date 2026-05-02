@@ -1,84 +1,121 @@
 
 # Deploying a Spark Cluster on AWS Academy
 
-This repository is intended to provide the instructions to deploy a Spark Cluster for academic purposes within the AWS Academy environment. Together with this, this repo contains several scripts to facilitate the deployment and management of the cluster.
+This repository contains a guided procedure for deploying a Spark cluster for teaching purposes inside AWS Academy. The cluster uses a **Controller** machine to orchestrate the deployment of a Spark cluster through [Flintrock](https://github.com/nchammas/flintrock), with EC2 instances for computing and S3 for persistent storage.
 
-The tools enclosed in this repo will allow you to easily create, log into, and destroy a Spark-based cluster that uses EC2 for computing and S3 for permanent storage, in order to develop and test distributed software developments intended for big data analysis.
+This is not intended for production use, but as an academic resource to practice the deployment and operation of distributed big data infrastructure.
 
-This repo is not intended for production use, but as an academic resource to train data engineers in the use of big data distributed infrastructure.
+## Repository Structure
 
-## Initial Set-Up
+- `config/flintrock/`: Flintrock configuration for cluster provisioning
+- `config/spark/`: Spark configuration files deployed to the cluster master
+- `config/hadoop/`: Hadoop configuration files deployed by Flintrock
+- `credentials/aws/`: Template for AWS session credentials
+- `scripts/`: Utility scripts for cluster operations and testing
 
-### Create data bucket
+When referring to the **AWS Academy Console** it corresponds to the regular AWS Management Console, but accessed through the AWS Academy portal. The services and features are the same as in the regular console, but the available resources will be provided and limited by the AWS Academy environment.
 
-Go into the AWS Console provided by AWS Academy, then go to the S3 service and:
+## Initial AWS Preparation
+
+### Create the EC2 key pair
+
+In the AWS Academy console go to **EC2** and then:
+
+- Open **Network & Security** → **Key Pairs**
+- Click **Create key pair**
+- Name the key `cluster-key`
+- Use an **RSA** key
+- Use the **.pem** format
+- Download the key to your computer
+
+If you want to keep your local material organized, you may store the key inside `.ssh/` for easy access from the terminal. The important thing is to remember where you stored it, because you will need it both to connect to the Controller machine and to upload it to the Controller later.
+
+> ⚠️ Warning: You cannot download the same key pair again. If you lose the `.pem` file, you will not be able to connect to any machine that uses that key pair
+
+### Create the security group
+
+You must create a security group that allows SSH access to the Controller machine:
+
+- Open **Network & Security** → **Security Groups**
+- Click **Create security group**
+- Name the group `spark-cluster-sg` with a description like "Security group for the Spark cluster" and VPC to the default one provided by AWS
+- In **Inbound rules** add a rule with:
+  - Type: `SSH`
+  - Port: `22`
+  - Source: `Anywhere-IPv4`
+- In **Outbound rules** there should be a single rule allowing all traffic configured by default. You must leave it as is
+- Click **Create security group**
+
+> 💡 Note: Flintrock will automatically create its own security group (`flintrock-spark-cluster`) to handle communication between the Spark cluster machines. You do not need to configure that manually
+
+### Create the S3 data bucket
+
+Go to the S3 service and:
 
 - Click on **Create bucket**
-- Name you bucket with your rut following this pattern **12345678-k-dde**
-- Click in **Create bucket**
+- Name your bucket following the pattern `XXXXXXXX-X-spark-data` where `XXXXXXXX-X` is your student RUT without dots (e.g., `12345678-k-spark-data`)
+- Click on **Create bucket**
 
-> 💡 **Note**: The bucket naming pattern is for standardization, you can name you bucket in any way you like if the name is already taken or if you want to use something specific
+> 💡 Note: The bucket naming pattern is for standardization. You may use any name you prefer, but you will need to update the test scripts accordingly
 
-### Create the controller instance
+## Creating the Controller Machine
 
-Go to the EC2 service and:
+### Create the Controller instance
 
-- Go to **Network & Security** → **Key Pairs** and:
-  - Click on **Create key pair**
-  - Set the key name to **cluster-key**
-  - The **Key pair type** must be **RSA**
-  - The **Private key file format** must be **.pem**
-  - Click on **Create key pair**. This will automatically download a **cluster-key.pem** file to your computer
-> 💡 **Note**: The tutorial scripts assume key it is called **cluster-key.pem**, but this is not required; nevertheless, if you want to use another name you will need to update the repo scripts accordingly
-- Go to **Instances** → **Instances** and click on **Launch instances**. You must use the default configuration with the following changes:
-  - Name your instance **Cluster Controller**
-  - Application and OS Images
-    - Select **Ubuntu** as the OS
-    - Select the image **Ubuntu Server 24.04**
-  - Instance Type
-    - Select the instance type **t2.large**
-  - Key pair
-    - Select **cluster-key** (the key that you created in the previous step)
-  - Configure storage
-    - Change the volume size from 8 to 20
-- Go to **Network & Security** → **Elastic IPs** and:
-  - Click on **Allocate Elastic IP address** and then click on **Allocate**
-  - Click on the IP address that was allocated
-  - **Take note of this IP, as it will be the ip you will be using to connect to your cluster**
-  - Click on **Associate Elastic IP address**
-  - Click on the **instance** input and select the EC2 machine you created in the previous step
-  - Click on **Associate**
+Go to **EC2** → **Instances**, and click **Launch instances**. Configure the instance with:
 
-### Connect to the machine
+- Name: `Controller`
+- Operating system: `Ubuntu Server 24.04`
+- Instance type: `t3.large`
+- Key pair: the key created in the previous step
+- Network settings: Select existing security group and then select `spark-cluster-sg`
+- Storage: `20 GB` `gp3`
 
-> ⚠️ **Note**: Consider this information if you encounter an error when connecting to the instance because of file permissions
->
-> - **Linux or Mac**: you should execute `chmod 400 cluster-key.pem` in the folder where you stored the **cluster-key.pem** file. This sets the key permissions to read-only for the owner, something that is required for security reasons
-> 
-> - **Windows**: You might require to adjust the key permissions. First, get you username by running `whoami` in the terminal, then, run the command `icacls cluster-key.pem /reset` and finally run `icacls cluster-key.pem /grant <username>:F` where **<username>** is your Windows username.
+Click **Launch instance** and then **View all instances**. Wait until the Controller instance is in state running before proceeding.
 
-- Go to the folder where you stored de cluster-key.pem file
-- Run the command 
-  ```bash
-  ssh -i cluster-key.pem ubuntu@<ip_address>
-  ```
-- The first time you connect, you should get a message similar to:
-  ```bash
-  The authenticity of host '52.70.173.29 (52.70.173.29)' can't be established.
-  ```
-- This is because you are connecting to a machine that is unknown to your system. You should type **yes** to accept the fingerprint of your server
-- After this, you should have connected to the main cluster server and you should get a terminal that looks similar to:
-  ```bash
-  ubuntu@ip-172-31-24-123:~$
-  ```
+### Elastic IP for the Controller
 
-## Installation
+In AWS, each time a machine is stopped and started again, it may receive a different public IP. To maintain a fixed public IP for the Controller, associate an Elastic IP to it:
 
-Once it has been possible to connect to the main cluster server, we can proceed with the installation of the required software.
+- Open **Network & Security** → **Elastic IPs**
+- Click **Allocate Elastic IP address**
+- Use the default options and click **Allocate**
+- After the Elastic IP is allocated, select it and click **Actions** → **Associate Elastic IP address**
+- In the association form, select the Controller instance (it is not necessary to select a specific private IP)
+- Click **Associate**
+- Take note of the Elastic IP, which is the new public IP of the Controller. You will use it to connect to the Controller throughout this procedure
 
-### Update your system
+### Testing the SSH connection to the Controller
 
-You must start by updating the system packages and installing the basic requirements by running:
+Before proceeding, test that you can connect to the Controller through SSH using the `.pem` key. In the terminal, go to the folder that contains the `.pem` file, then run:
+
+On Linux or macOS:
+
+```bash
+chmod 400 cluster-key.pem
+ssh -i cluster-key.pem ubuntu@<controller_public_ip>
+```
+
+On Windows you may need to adjust permissions before connecting. First get your username with `whoami`, then run:
+
+```powershell
+icacls cluster-key.pem /reset
+icacls cluster-key.pem /grant <username>:F
+```
+
+Then you can connect with:
+
+```bash
+ssh -i cluster-key.pem ubuntu@<controller_public_ip>
+```
+
+The first time you connect, you must accept the server fingerprint. If the connection is successful, you should see a welcome message from the Ubuntu server and a command prompt. Once you confirm that the SSH connection is working, you can disconnect with `exit` and proceed to the next steps.
+
+## Configuring the Controller
+
+### Base Installation
+
+Connect to the Controller, update packages and install the required dependencies:
 
 ```bash
 sudo apt update
@@ -87,19 +124,11 @@ sudo apt install pipx zip python-is-python3 python3-boto3 -y
 pipx ensurepath
 ```
 
-### Clone Repository
-
-You must clone this repository that includes all the required code. You can do this by typing the following command:
-
-```bash
-git clone https://github.com/ptoledo-teaching/dataengineering-spark.git
-```
+It is recommended to reboot the machine after this step.
 
 ### Install AWS CLI
 
-AWS CLI is the Amazon Web Services Command Line Interface. It allows you to manage AWS services from your command line.
-
-Installation instructions can be found [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html). In summary, copy and execute the following lines in the terminal
+AWS CLI allows you to manage AWS services from the command line and is required by Flintrock to interact with EC2:
 
 ```bash
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -108,141 +137,219 @@ sudo ./aws/install
 rm -rf awscliv2.zip aws
 ```
 
-### Install Flintrock
+### Make This Repository Available on the Controller
 
-[Flintrock](https://github.com/nchammas/flintrock) is an independent project designed to automatically deploy and configure spark clusters; nevertheless, in order to bypass certain account and permission issues, the Flintrock package must be patched. The following command assures a clean patched installation of the tool:
-
-To install it you must run:
+Clone the current repository and place it in `/opt/`:
 
 ```bash
-pipx uninstall flintrock
-pipx install flintrock
-~/dataengineering-spark/scripts/patch.py
+cd /tmp
+git clone https://github.com/ptoledo-teaching/dataengineering-spark.git
+sudo mv dataengineering-spark /opt/dataengineering-spark
 ```
 
-### Restarting server
+This will leave the repository in:
 
-With all the previous installations the system should be ready to start the configuration procedure. To finish this stage, it is required to reboot the system to ensure all changes take effect. To reboot the system, run:
+```bash
+/opt/dataengineering-spark
+```
+
+### Install Flintrock
+
+[Flintrock](https://github.com/nchammas/flintrock) is a tool that automates the deployment and configuration of Spark clusters on EC2. Because of certain account and permission restrictions in AWS Academy, the Flintrock package must be patched before use. The patch script included in this repository applies all required fixes automatically.
+
+To install and patch Flintrock, run the following from your **home directory** (`~`):
+
+```bash
+cd ~
+pipx uninstall flintrock 2>/dev/null; pipx install flintrock
+python3 /opt/dataengineering-spark/scripts/patch.py
+```
+
+> ⚠️ Important: The patch script must be run from the home directory (`~`) because it resolves internal Flintrock file paths relative to that location.
+
+### Reboot the Controller
+
+Reboot the Controller to ensure all package updates and environment changes take effect:
+
 ```bash
 sudo reboot
 ```
-This will log you out, and you must login again in the same way as before.
 
-## Cluster configuration
+After the reboot, reconnect using the same SSH command as before.
 
-### SSH Credentials
+## Cluster Configuration
 
-To start the cluster configuration we need to pass the **cluster-key.pem** file to the controller machine. You can do this by running:
+### Upload SSH Credentials
 
-```bash
-ssh -i cluster-key.pem ubuntu@<ip_address> "mkdir dataengineering-spark/credentials/keys"
-scp -i cluster-key.pem cluster-key.pem ubuntu@<ip_address>:~/dataengineering-spark/credentials/keys
-ssh -i cluster-key.pem ubuntu@<ip_address> "chmod 400 dataengineering-spark/credentials/keys/cluster-key.pem"
-```
-
-### AWS User Credentials
-
-> ⚠️ **Important**: The AWS_SESSION_TOKEN changes with each session and must be updated each time you launch the lab
-
-Go to your cluster server and then go to the aws credentials folder with:
+The Controller needs the `cluster-key.pem` file to create and connect to the Spark cluster machines. Run the following commands **from your local machine** (in the folder where the key is stored):
 
 ```bash
-cd dataengineering-spark/credentials/aws
+ssh -i cluster-key.pem ubuntu@<controller_public_ip> \
+  "sudo mkdir -p /opt/dataengineering-spark/credentials/keys && \
+   sudo chown ubuntu:ubuntu /opt/dataengineering-spark/credentials/keys"
+scp -i cluster-key.pem cluster-key.pem \
+  ubuntu@<controller_public_ip>:/opt/dataengineering-spark/credentials/keys/
+ssh -i cluster-key.pem ubuntu@<controller_public_ip> \
+  "chmod 400 /opt/dataengineering-spark/credentials/keys/cluster-key.pem"
 ```
 
-Make a copy of the credentials example file with:
+### Set AWS User Credentials
 
+> ⚠️ Important: The AWS session token changes with each session and must be updated every time you start the lab
+
+Connect to the Controller and go to the repository:
+
+```bash
+cd /opt/dataengineering-spark
+cp credentials/aws/credentials.sh.template credentials/aws/credentials.sh
 ```
-cp credentials.sh.template credentials.sh
+
+In the page where you launched the AWS Academy session, go to **AWS Details** → **Cloud Access** → **AWS CLI** to get your account credentials. Open `credentials/aws/credentials.sh` and fill in the three values:
+
+```bash
+export AWS_ACCESS_KEY_ID=<your_access_key>
+export AWS_SECRET_ACCESS_KEY=<your_secret_key>
+export AWS_SESSION_TOKEN=<your_session_token>
 ```
 
-In the page where you launched the AWS Academy session, go to **AWS Details** → **Cloud Access** → **AWS CLI** to get the account credentials. With this information, open and complete the **credentials.sh** file with the corresponding information. You should copy the 3 values independently.
+## Managing the Cluster
 
-## Usage on Cluster Controller Machine
+All cluster management scripts must be run from the Controller machine, inside the `/opt/dataengineering-spark/` directory:
 
-Within the scripts directory in the controller machine, you will find the following relevant scripts:
+```bash
+cd /opt/dataengineering-spark
+```
 
-- `launch.sh` - Deploys the cluster
-- `login.sh` - SSH into the master node
-- `destroy.sh` - Destroys the cluster
+### Launching the Cluster
 
-### launch.sh
+Run the launch script to deploy and configure the Spark cluster:
 
-Uses **config/**, **credentials/**, and **scripts/** to deploy and configure your cluster.
+```bash
+./launch.sh
+```
 
-The base configuration has been provided, but you may need to edit `config/flintrock/config.yaml` if you want to:
+This script uses `config/flintrock/config.yaml` to configure the cluster. You may edit that file before launching if you want to:
 
-- Change the instance type (default: **t2.micro**)
-- Update the AMI ID
-- Modify number of workers (default: 2)
+- Change the instance type for the workers (default: `t2.micro`)
+- Modify the number of workers (default: `2`)
 
-If deployment fails, the script will prompt you about keeping or deleting the created machines.
+Expected runtime: 2–4 minutes. If deployment fails, the script will ask whether to keep or delete the created machines.
 
-Expected runtime: 2–4 minutes.
+### Connecting to the Cluster Master
 
-### login.sh
+To open an SSH session to the Spark cluster Master node:
 
-Connects you to the master machine via SSH.
+```bash
+./login.sh
+```
 
-### destroy.sh
+### Destroying the Cluster
 
-Destroys the cluster EC2 instances, but keeps all configurations (S3 bucket, keys, etc.) intact.
+To terminate all cluster EC2 instances:
 
-You may see residual EC2 security groups named **flintrock** or **flintrock-spark-cluster**. These can be deleted manually.
+```bash
+./destroy.sh
+```
+
+This keeps all configurations intact (S3 bucket, credentials, and keys). You may see residual security groups named `flintrock` or `flintrock-spark-cluster`. These can be deleted manually from the AWS console.
 
 ## Usage on the Cluster Master Machine
 
-The **scripts** directory contains the following commands:
+Once connected to the Cluster Master through `./login.sh`, the following scripts are available in `~/scripts/`:
 
-### clean.sh
+### `clean.sh`
 
-Goes through each worker and cleans the **~/spark/work** directory to free disk space.
-
-### get_usage.sh
-
-Reports CPU and memory usage for each machine. The first column is the master, followed by each worker.
-
-The script uses a default interval of 5 seconds. You can use an integer parameter to change the refresh interval:
+Goes through each worker and removes temporary Spark working files to free disk space:
 
 ```bash
-./get_usage.sh 10
+~/scripts/clean.sh
 ```
 
-That command will report the usage every 10 seconds.
+### `get_usage.sh`
 
-### submit.sh
+Reports CPU and memory usage for the Master and each Worker. The first column is the Master, followed by each Worker.
 
-Wrapper for `spark-submit`. Accepts one parameter: the script to submit.
+```bash
+~/scripts/get_usage.sh
+```
+
+By default, it samples every 5 seconds. To change the interval:
+
+```bash
+~/scripts/get_usage.sh 10
+```
+
+### `submit.sh`
+
+Wrapper for `spark-submit` that handles AWS credential injection. Accepts one parameter: the script to submit:
+
+```bash
+~/scripts/submit.sh <script.py>
+```
 
 ## Testing
 
-There are two test scripts provided to verify your Spark setup.
+Two test scripts are provided to verify the Spark setup. They must be run from the Cluster Master machine after connecting via `./login.sh`.
 
-### test-000.sh
+### `test-000.sh`
 
-A simple distributed map-reduce script. The test output can be found at **scripts/test-000.log**. This tests calculate the sum of the first 1 million natural numbers squared. The expected log should report:
+A basic distributed map-reduce script that computes the sum of the first 1 million natural numbers squared:
+
+```bash
+~/scripts/test-000.sh
+```
+
+The output is saved in `~/scripts/test-000.log`. The expected result is:
 
 ```
 Sum of squares: 333332833333500000
 ```
 
-### test-001.sh
+### `test-001.sh`
 
-> ⚠️ **Important**: Remember to configure the bucket name by editing the line 9 in the **scripts/test-001.py** file accordingly
- 
-Tests S3 integration and PySpark SQL features, by loading reference data and executing SQL operations.
+Tests S3 integration and PySpark SQL features by loading reference astronomical data and executing SQL operations.
 
-To run this test it is required to vertically and horizontally scale the cluster. The recommended configuration considers **7** workers with machines type **t2.medium**. This test will generate files to be stored in the S3 bucket you created at the beginning of this tutorial. You must configure the bucket name by editing the line 9 in the **scripts/test-001.py** file.
+Before running this test:
 
-Once ran, the expected log should report:
+1. Scale the cluster to at least **7 workers** with instance type **t2.medium** in `config/flintrock/config.yaml` on the Controller, then redeploy with `./launch.sh`
+2. Set your bucket name by editing line 9 of `~/scripts/test-001.py` on the Cluster Master
+
+Run with:
+
+```bash
+~/scripts/test-001.sh
+```
+
+The expected log should report:
 
 ```
 Reading file vlt_observations_000.csv from paranal-data bucket
-Writting file as vlt_observations_000.parsed.parquet into 12345678-k-dde bucket
+Writting file as vlt_observations_000.parsed.parquet into 12345678-k-spark-data bucket
 ```
 
-And you should find the following folders in your S3 bucket:
+And the following folders should appear in your S3 bucket:
 
-- **vlt_observations_000.parquet**
-- **vlt_observations_000.parsed.csv**
-- **vlt_observations_000.parsed.parquet**
+- `vlt_observations_000.parquet`
+- `vlt_observations_000.parsed.csv`
+- `vlt_observations_000.parsed.parquet`
+
+## Final Notes
+
+### Shut Down the Cluster
+
+To stop the Spark cluster without losing configuration, run from the Controller:
+
+```bash
+cd /opt/dataengineering-spark
+./destroy.sh
+```
+
+This terminates all cluster EC2 instances but keeps the Controller, the S3 bucket, and all credentials intact. You can redeploy the cluster at any time with `./launch.sh`.
+
+To stop the Controller machine itself, go to the AWS Academy console, select the Controller instance, and use **Instance state** → **Stop instance**. The machine (including `/opt/dataengineering-spark/` and all credentials) will be preserved for the next session.
+
+### About the AWS Academy Session
+
+Each time the AWS Academy session starts, it starts a timer of 4 hours. When the timer ends, all resources are stopped automatically. You can check the remaining time in the AWS Academy Canvas website. If you need more time, click **Start Lab** again to reset the timer.
+
+When an AWS Academy session starts, it automatically restarts all EC2 machines. When the session ends, all machines are stopped to prevent resource usage when not needed. Because of this, the AWS credentials in `credentials/aws/credentials.sh` will be invalid at the start of each new session and must be updated before launching the cluster again.
