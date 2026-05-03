@@ -1,7 +1,7 @@
 services:
   spark:
     version: 4.1.1
-    download-source: "https://archive.apache.org/dist/spark/spark-4.1.1/spark-4.1.1-bin-hadoop3.tgz"
+    download-source: "https://archive.apache.org/dist/spark/spark-4.1.1/"
 
 provider: ec2
 
