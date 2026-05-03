@@ -232,10 +232,10 @@ launch.sh
 
 This script uses `config/flintrock/config.yaml` to configure the cluster. You may edit `/opt/dataengineering-spark/config/flintrock/config.yaml` before launching if you want to:
 
-- Change the instance type for the workers (default: `t2.micro`)
+- Change the instance type for the workers (default: `t2.small`)
 - Modify the number of workers (default: `2`)
 
-Expected runtime: 2–4 minutes. If deployment fails, the script will ask whether to keep or delete the created machines.
+If deployment fails, the script will ask whether to keep or delete the created machines, you can troubleshoot from the presented log.
 
 ### Connecting to the Cluster Master
 
@@ -311,10 +311,7 @@ Sum of squares: 333332833333500000
 
 Tests S3 integration and PySpark SQL features by loading reference astronomical data and executing SQL operations.
 
-Before running this test:
-
-1. Scale the cluster to at least **7 workers** with instance type **t2.medium** in `config/flintrock/config.yaml` on the Controller, then redeploy with `./launch.sh`
-2. Set your bucket name by editing line 9 of `~/scripts/test-001.py` on the Cluster Master
+Before running this test you must set your bucket name by editing line 15 of `~/scripts/test-001.py` on the Cluster Master
 
 Run with:
 
@@ -325,15 +322,25 @@ Run with:
 The expected log should report:
 
 ```
-Reading file vlt_observations_000.csv from paranal-data bucket
-Writing file as vlt_observations_000.parsed.parquet into 12345678-k-spark-data bucket
+Using temporary AWS credentials
+Using cached CSV s3://XXXXXXXX-X-spark-data/csv/eso-archive/observations.2025.csv
+Reading extracted file eso-archive/observations.2025.csv from XXXXXXXX-X-spark-data bucket
+    - 1124118 rows read
+    - Creating row number column
+Writing file as eso-archive/observations.2025.parquet into XXXXXXXX-X-spark-data bucket
+Reading file eso-archive/observations.2025.parquet from XXXXXXXX-X-spark-data bucket
+    - 1124118 rows read
+    - Parsing float columns with tolerant cast
+Writing file as eso-archive/observations.2025.parsed.csv into XXXXXXXX-X-spark-data bucket
+Writing file as eso-archive/observations.2025.parsed.parquet into XXXXXXXX-X-spark-data bucket
 ```
 
 And the following folders should appear in your S3 bucket:
 
-- `vlt_observations_000.parquet`
-- `vlt_observations_000.parsed.csv`
-- `vlt_observations_000.parsed.parquet`
+- `csv/eso-archive/observations.2025.csv`: Cache for avoiding to download the data each time test001 runs
+- `eso-archive/observations.2025.parquet`
+- `eso-archive/observations.2025.parsed.csv`
+- `eso-archive/observations.2025.parsed.parquet`
 
 ## Final Notes
 
