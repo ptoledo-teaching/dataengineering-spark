@@ -8,7 +8,7 @@ patches = [
          "lines": (215, 219),
          "replacement": '''
     for (num, device) in enumerate(sorted(non_root_block_devices, key=lambda d: d.kname)):
-        if device.kname != '/dev/xvda':
+        if device.kname not in ['/dev/xvda', '/dev/nvme0n1']:
             ephemeral_devices.append(
                 BlockDevice(
                     kname=device.kname,

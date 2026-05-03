@@ -9,9 +9,9 @@ providers:
   ec2:
     key-name: cluster-key
     identity-file: /opt/dataengineering-spark/credentials/keys/cluster-key.pem
-    instance-type: t2.micro
+    instance-type: t3.micro
     region: us-east-1
-    ami: ami-0263dd5562cf9d185
+    ami: ami-0ed094fb1304fd857
     user: ec2-user
     tenancy: default
     min-root-ebs-size-gb: 8
