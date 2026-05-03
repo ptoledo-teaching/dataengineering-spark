@@ -66,10 +66,10 @@ Go to **EC2** → **Instances**, and click **Launch instances**. Configure the i
 
 - Name: `Controller`
 - Operating system: `Ubuntu Server 26.04`
-- Instance type: `t3.large`
+- Instance type: `t3.small`
 - Key pair: the key created in the previous step
 - Network settings: Select existing security group and then select `spark-cluster-sg`
-- Storage: `20 GB` `gp3`
+- Storage: `8 GB` `gp3`
 
 Click **Launch instance** and then **View all instances**. Wait until the Controller instance is in state running before proceeding.
 
