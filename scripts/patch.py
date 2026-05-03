@@ -40,6 +40,12 @@ patches = [
     },
     {
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/core.py",
+        "lines": (676,676),
+        "replacement": '''
+            sudo yum install -y python3.14'''
+    },
+    {
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/core.py",
         "lines": (661,661),
         "replacement": '''
             python3 /tmp/setup-ephemeral-storage.py'''

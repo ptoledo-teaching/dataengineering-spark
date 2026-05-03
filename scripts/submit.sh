@@ -11,6 +11,9 @@ fi
 
 # Common configuration
 COMMON_CONF="\
+  --conf spark.pyspark.python=/usr/bin/python3.14 \
+  --conf spark.pyspark.driver.python=/usr/bin/python3.14 \
+  --conf spark.executorEnv.PYSPARK_PYTHON=/usr/bin/python3.14 \
   --conf spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID \
   --conf spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY \
   --conf spark.hadoop.fs.s3a.endpoint=s3.amazonaws.com \
