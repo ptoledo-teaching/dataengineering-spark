@@ -326,7 +326,7 @@ The expected log should report:
 
 ```
 Reading file vlt_observations_000.csv from paranal-data bucket
-Writting file as vlt_observations_000.parsed.parquet into 12345678-k-spark-data bucket
+Writing file as vlt_observations_000.parsed.parquet into 12345678-k-spark-data bucket
 ```
 
 And the following folders should appear in your S3 bucket:
