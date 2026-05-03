@@ -9,7 +9,7 @@ providers:
   ec2:
     key-name: cluster-key
     identity-file: /opt/dataengineering-spark/credentials/keys/cluster-key.pem
-    instance-type: t3.micro
+    instance-type: t3.small
     region: us-east-1
     ami: ami-0ed094fb1304fd857
     user: ec2-user
