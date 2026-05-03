@@ -19,7 +19,7 @@ COMMON_CONF="\
   --conf spark.hadoop.fs.s3a.endpoint=s3.amazonaws.com \
   --conf spark.executorEnv.AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
   --conf spark.executorEnv.AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-  --packages org.apache.hadoop:hadoop-aws:3.3.4 \
+  --packages org.apache.hadoop:hadoop-aws:3.4.2 \
   --master spark://$(hostname):7077"
 
 # Conditional credentials
