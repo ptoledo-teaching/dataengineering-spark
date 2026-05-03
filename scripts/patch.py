@@ -5,6 +5,12 @@ import os
 patches = [
     {
         "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/flintrock.py",
+        "lines": (295,295),
+        "replacement": '''
+@click.option('--hdfs-version', default='3.4.2')'''
+    },
+    {
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/flintrock.py",
         "lines": (293,293),
         "replacement": '''
 @click.option('--java-version', type=click.IntRange(min=8), default=21)'''
