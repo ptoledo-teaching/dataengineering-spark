@@ -85,7 +85,7 @@ wait_for_ssh() {
 
 log_step "Using AWS region $AWS_REGION"
 log_step "Launching cluster"
-flintrock --config "$FLINTROCK_CONFIG" launch spark-cluster 2>/dev/null
+flintrock --config "$FLINTROCK_CONFIG" launch spark-cluster
 IP_MASTER=$(flintrock --config "$FLINTROCK_CONFIG" describe spark-cluster 2>/dev/null | grep master: | awk '{print $2}')
 
 if [ -z "$IP_MASTER" ]; then
