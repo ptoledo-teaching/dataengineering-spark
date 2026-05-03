@@ -4,6 +4,12 @@ import os
 
 patches = [
     {
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/flintrock.py",
+        "lines": (293,293),
+        "replacement": '''
+@click.option('--java-version', type=click.IntRange(min=8), default=21)'''
+    },
+    {
          "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/setup-ephemeral-storage.py",
          "lines": (215, 219),
          "replacement": '''
@@ -57,18 +63,17 @@ patches = [
                 libXrender \\
                 libXtst
             echo "Getting temurin"
-            wget https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.28%2B6/OpenJDK11U-jdk_x64_linux_hotspot_11.0.28_6.tar.gz -O /tmp/temurin11.tar.gz
+            wget https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz -O /tmp/temurin21.tar.gz
             cd /opt
-            sudo tar -xzf /tmp/temurin11.tar.gz
-            sudo mv jdk-11.0.28+6 temurin-11
+            sudo tar -xzf /tmp/temurin21.tar.gz
+            sudo mv jdk-21.0.11+10 temurin-21
             # Set JAVA_HOME
-            echo 'export JAVA_HOME=/opt/temurin-11' | sudo tee /etc/profile.d/java.sh
+            echo 'export JAVA_HOME=/opt/temurin-21' | sudo tee /etc/profile.d/java.sh
             echo 'export PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/java.sh
             source /etc/profile.d/java.sh
             # Verify
             java -version
             sudo yum remove -y java-1.6.0-openjdk java-1.7.0-openjdk
-            sudo sh -c "echo export JAVA_HOME=/usr/lib/jvm/{jp} >> /etc/environment"
             source /etc/environment
         """)'''
     }
