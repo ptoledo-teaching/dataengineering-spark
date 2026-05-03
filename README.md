@@ -65,7 +65,7 @@ Go to the S3 service and:
 Go to **EC2** → **Instances**, and click **Launch instances**. Configure the instance with:
 
 - Name: `Controller`
-- Operating system: `Ubuntu Server 24.04`
+- Operating system: `Ubuntu Server 26.04`
 - Instance type: `t3.large`
 - Key pair: the key created in the previous step
 - Network settings: Select existing security group and then select `spark-cluster-sg`

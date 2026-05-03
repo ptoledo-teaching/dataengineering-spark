@@ -4,13 +4,13 @@ import os
 
 patches = [
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/flintrock.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/flintrock.py",
         "lines": (293,293),
         "replacement": '''
 @click.option('--java-version', type=click.IntRange(min=8), default=21)'''
     },
     {
-         "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/setup-ephemeral-storage.py",
+         "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/scripts/setup-ephemeral-storage.py",
          "lines": (215, 219),
          "replacement": '''
     for (num, device) in enumerate(sorted(non_root_block_devices, key=lambda d: d.kname)):
@@ -21,31 +21,31 @@ patches = [
                     mountpoint='/media/ephemeral' + str(num)))'''
     },
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/services.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/services.py",
         "lines": (367,367),
         "replacement": '''
                     python3 /tmp/download-package.py "{download_source}" "spark"'''
     },
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/services.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/services.py",
         "lines": (183,183),
         "replacement": '''
                 python3 /tmp/download-package.py "{download_source}" "hadoop"'''
     },
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/scripts/download-package.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/scripts/download-package.py",
         "lines": (38,38),
         "replacement": '''
                 subprocess.check_call(['aws', 's3', 'cp', '--no-sign-request', url, download_path])'''
     },
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/core.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/core.py",
         "lines": (661,661),
         "replacement": '''
             python3 /tmp/setup-ephemeral-storage.py'''
     },
     {
-        "file": ".local/share/pipx/venvs/flintrock/lib/python3.12/site-packages/flintrock/core.py",
+        "file": ".local/share/pipx/venvs/flintrock/lib/python3.14/site-packages/flintrock/core.py",
         "lines": (583,600),
         "replacement": '''
     ssh_check_output(
